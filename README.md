@@ -1,3 +1,3 @@
-#基本配置
+# 基本配置
 react+antd
 ### `npm start`
