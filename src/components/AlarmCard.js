@@ -2,7 +2,6 @@ import React from 'react';
 import { Card, Badge, Space, Col, Button } from 'antd';
 import dayjs from 'dayjs';
 import 'dayjs/locale/zh-cn';
-
 const AlarmCard = ({ alarm, onConfirm }) => {
   // 格式化时间显示
   const formatDateTime = (timestamp) => {
@@ -20,7 +19,7 @@ const AlarmCard = ({ alarm, onConfirm }) => {
     }
   };
 
- return (
+  return (
     <Col xs={24} sm={12} md={6} lg={6} key={alarm.id}>
       <Badge.Ribbon 
         text={alarm.isEnded ? '已结束' : '进行中'}

@@ -65,4 +65,28 @@ export const alarmApi = {
       throw error;
     }
   },
+
+  // 确认报警结束
+  confirmAlarmEnd: async (alarmId) => {
+    try {
+      const response = await fetch(`${BASE_URL}/alarms/${alarmId}/confirm-end`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      if (!response.ok) {
+        throw new Error('确认报警结束失败');
+      }
+      const result = await response.json();
+      if (result.code === 200) {
+        return result.data;
+      } else {
+        throw new Error(result.message);
+      }
+    } catch (error) {
+      console.error('确认报警结束错误:', error);
+      throw error;
+    }
+  },
 };

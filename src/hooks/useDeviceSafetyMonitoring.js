@@ -14,8 +14,8 @@ export const useDeviceSafetyMonitoring = () => {
       try {
         const activeAlarms = await alarmApi.getActiveAlarms();
         const alarmsMap = {};
-        activeAlarms.forEach(alarm => {
-          alarmsMap[alarm.id] = { ...alarm, isEnded: false };
+        activeAlarms.filter(alarm => !alarm.isEnded).forEach(alarm => {
+          alarmsMap[alarm.id] = { ...alarm };
         });
         setAlarms(alarmsMap);
       } catch (error) {
@@ -42,16 +42,21 @@ export const useDeviceSafetyMonitoring = () => {
 
         // 订阅报警状态变化
         client.subscribe('/topic/alarm-status', (message) => {
-          const { alarmId, isEnded, endTime } = JSON.parse(message.body);
+          const { alarmId, ended } = JSON.parse(message.body);
           setAlarms(prev => {
-            if (isEnded) {
+            // 如果报警已结束，直接从状态中移除
+            if (ended) {
               const { [alarmId]: removedAlarm, ...remainingAlarms } = prev;
               return remainingAlarms;
             }
-            return {
-              ...prev,
-              [alarmId]: { ...prev[alarmId], isEnded, endTime }
-            };
+            // 只有未结束的报警才更新状态
+            if (prev[alarmId] && !prev[alarmId].isEnded) {
+              return {
+                ...prev,
+                [alarmId]: { ...prev[alarmId], isEnded: ended }
+              };
+            }
+            return prev;
           });
         });
       },
@@ -74,8 +79,22 @@ export const useDeviceSafetyMonitoring = () => {
     };
   }, []);
 
+  const confirmAlarm = async (alarmId) => {
+    try {
+      await alarmApi.confirmAlarmEnd(alarmId);
+      setAlarms(prev => {
+        const { [alarmId]: removedAlarm, ...remainingAlarms } = prev;
+        return remainingAlarms;
+      });
+    } catch (error) {
+      console.error('确认报警结束失败:', error);
+      throw error;
+    }
+  };
+
   return {
     alarms,
-    connectionStatus
+    connectionStatus,
+    confirmAlarm
   };
 };
